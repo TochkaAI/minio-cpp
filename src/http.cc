@@ -439,7 +439,15 @@ Response Request::execute() {
 
     requests.fdset(&fdread, &fdwrite, &fdexcep, &maxfd);
 
-    if (select(maxfd + 1, &fdread, &fdwrite, &fdexcep, nullptr) < 0) {
+    struct timeval tmval;
+    tmval.tv_sec = 5;
+    tmval.tv_usec = 0;
+
+    int retval = select(maxfd + 1, &fdread, &fdwrite, &fdexcep, &tmval);
+    if (retval == 0) {
+        break;
+    }
+    else if (retval < 0) {
       std::cerr << "select() failed; this should not happen" << std::endl;
       std::terminate();
     }
